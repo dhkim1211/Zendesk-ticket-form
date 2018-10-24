@@ -143,6 +143,60 @@ class ZendeskTicket < Sinatra::Base
     # erb :default
   end
 
+  post '/forward_email' do
+    puts params.inspect
+    #Get form data
+    subject = params['subject']
+    description = params['description']
+    topic = params['topic']
+    name = params['name']
+    order_number = params['order_number']
+    ticket_body = "Name: #{name} \n Order Number: #{order_number} \n Description: #{description}"
+    email = params['email']
+
+    #Choose recipient based on topic
+    case topic
+    when "order_status"
+      email_to = "orderstatus@ellie.com"
+    when "order_skip"
+      email_to = "help@ellie.com"
+    when "order_switch"
+      email_to = "help@ellie.com"
+    when "subscription_cancel"
+      email_to = "help@ellie.com"
+    when "returns_exchange"
+      email_to = "returns@ellie.com"
+    when "marketing_pr"
+      email_to = "marketing@ellie.com"
+    when "influencer"
+      email_to = "influencers@ellie.com"
+    when "general"
+      email_to = "help@ellie.com"
+    end
+
+    #Send email:
+    sg_ticket_body = "Name: #{name} \n Email: #{email} \n Order Number: #{order_number} \n Description: #{description}"
+    sg_from = SendGrid::Email.new(email: email)
+    sg_to = SendGrid::Email.new(email: email_to)
+    sg_subject = "Ellie Contact Form Submission: #{subject}"
+    sg_content = SendGrid::Content.new(type: 'text/plain', value: sg_ticket_body)
+    sg_mail = SendGrid::Mail.new(sg_from, sg_subject, sg_to, sg_content)
+
+    sg = SendGrid::API.new(api_key: ENV['SENDGRID_API_KEY'])
+    response = sg.client.mail._('send').post(request_body: sg_mail.to_json)
+    puts response.status_code
+
+    if response.status_code.to_i == 202 || response.status_code.to_i == 200
+      puts "success! Sent thru sendgrid"
+      puts response.status_code
+      return [200, @default_headers, {message: "Success"}.to_json]
+    else
+      puts "error with sendgrid!"
+      puts response.status_code
+      return [400, @default_headers, {message: "Problem with the request"}.to_json]
+    end
+  end
+
   helpers do
       def get_shop_access_token(shop,client_id,client_secret,code)
         if @tokens[shop].nil?
