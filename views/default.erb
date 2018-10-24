@@ -1,0 +1,140 @@
+<head>
+<title>Contact Us</title>
+</head>
+<body>
+<h1>Contact Us</h1>
+<link rel="stylesheet" href="/css/form_styles.css">
+<div id="ticket_form">
+  <div class="title">Submit a ticket</div>
+
+  <% if @feedback %>
+      <div class="feedback"><%= @feedback %></div>
+  <% end %>
+
+  <form action="create_ticket" method="post">
+    <ul>
+      <li>
+        <select name="topic" class="field" required>
+          <option value="">Please Select Topic</option>
+          <option disabled>──────────</option>
+          <option disabled>PREPAID 3 MONTH CUSTOMER</option>
+          <option value="ellie__3_month_customer__skip">Skip</option>
+          <option value="ellie__3_month_customer__switch">Switch</option>
+          <option value="ellie__3_month_customer__update_address">Update Address</option>
+          <option value="ellie__3_month_customer__update_sizes">Update Sizes</option>
+          <option disabled>──────────</option>
+          <option disabled>UPDATE ACCOUNT</option>
+          <option value="ellie__update_account__skip">Skip</option>
+          <option value="ellie__update_account__switch">Switch</option>
+          <option value="ellie__update_account__update_address">Update Sizes</option>
+          <option value="ellie__update_account__update_bill_date">Update Bill Date</option>
+          <option value="ellie__update_account__update_sizes">Update Sizes</option>
+          <option value="ellie__update_account__update_subscription_plan">Update Subscription Plan</option>
+          <option disabled>──────────</option>
+          <option disabled>ORDERS</option>
+          <option value="ellie__order_status">Order Status</option>
+          <option disabled>──────────</option>
+          <option disabled>PRODUCT</option>
+          <option value="ellie__product_inquiries">Product Inquiry</option>
+          <option disabled>──────────</option>
+          <option disabled>SHIPPING</option>
+          <option value="ellie__shipping__lost_package">Lost Package</option>
+          <option value="ellie__shipping__tracking_status">Tracking Status</option>
+          <option disabled>──────────</option>
+          <option disabled>WEBSITE</option>
+          <option value="ellie__website_issue__checkout">Checkout</option>
+          <option value="ellie__website_issue__skip">Skip</option>
+          <option value="ellie__website_issue__switch">Switch</option>
+          <option value="ellie__website_issue__update_sizes">Update Sizes</option>
+          <option disabled>──────────</option>
+          <option disabled>RETURN/EXCHANGE</option>
+          <option value="ellie__return/exchange__damaged_item">Damaged Item</option>
+          <option value="ellie__return/exchange__duplicate_subscription">Duplicate Subscription</option>
+          <option value="ellie__return/exchange__size_exchange">Size Exchange</option>
+          <option value="ellie__return/exchange__status">Exchange Status</option>
+          <option disabled>──────────</option>
+          <option disabled>CANCEL SUBSCRIPTION</option>
+          <option value="ellie__cancel_subscription__created_duplicate">Duplicate Subscription</option>
+          <option value="ellie__cancel_subscription__customer_service_issue">Customer Service Issue</option>
+          <option value="ellie__cancel_subscription__financial_reason">Financial Reason</option>
+          <option value="ellie__cancel_subscription__quality_issue">Quality Issue</option>
+          <option value="ellie__cancel_subscription__return_policy_issue">Return Policy Issue</option>
+          <option value="ellie__cancel_subscription__website_issue">Website Issue</option>
+          <option disabled>──────────</option>
+          <option disabled>OTHER</option>
+          <option value="ellie__all_other">All Other</option>
+          <option value="ellie__careers">Careers</option>
+          <option value="ellie__influencers">Influencers</option>
+          <option value="ellie__marketing">Marketing</option>
+          <option value="ellie__wholesale_inquiries">Wholesale Inquiries</option>
+          <option value="ellie__business_opportunities">Business Opportunities</option>
+        </select></li>
+
+      <li><input type="text" placeholder="Your Name"
+        name="name" class="field" required></li>
+
+      <li><input type="text" placeholder="Subject"
+        name="subject" class="field" required></li>
+
+      <li><textarea placeholder="Description"
+        name="description" rows="6" class="field" required></textarea></li>
+
+        <li><input type="email" placeholder="your email address"
+          name="email" class="field" required><div class="register"><a href="https://ellieactive.zendesk.com/auth/v2/login/registration" target="_blank">Register</a> so our support team can email you to solve your problem.</div></li>
+
+      <li><input type="text" placeholder="Order #"
+        name="order_number" class="field" required></li>
+
+      <li><input type="submit" value="Submit"></li>
+    </ul>
+  </form>
+  </div>
+
+</body>
+
+<style>
+#ticket_form {
+    font-family: Verdana, Helvetica, sans-serif;
+    font-size: 10pt;
+    color: dimgray;
+    width: 240px;
+    border: 1px solid lightgray;
+    padding: 0 8px;
+}
+
+.title {
+    font-family: Arial, Helvetica, sans-serif;
+    font-weight: bold;
+    padding: 12px 0 0;
+}
+
+form ul {
+    list-style-type: none;
+    padding-left: 0;
+}
+
+form li {
+    margin: 0 0 6px 0;
+}
+
+textarea {
+    vertical-align: top;
+    border-color: lightgray;
+}
+
+.field {
+    width: 100%;
+}
+
+.register {
+    font-size: 8pt;
+    color: gray;
+    padding: 8px 0;
+}
+
+.feedback {
+    font-size: 8pt;
+    padding: 8px 0 0;
+}
+
+</style>
