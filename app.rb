@@ -7,6 +7,10 @@ require 'dotenv'
 require 'shopify_api'
 require 'sinatra/cross_origin'
 require 'sendgrid-ruby'
+require 'resque'
+require_relative 'resque_helper'
+require_relative 'email_worker'
+
 include SendGrid
 Dotenv.load
 
@@ -146,13 +150,16 @@ class ZendeskTicket < Sinatra::Base
   post '/forward_email' do
     puts params.inspect
     #Get form data
-    subject = params['subject']
-    description = params['description']
-    topic = params['topic']
-    name = params['name']
-    order_number = params['order_number']
-    ticket_body = "Name: #{name} \n Order Number: #{order_number} \n Description: #{description}"
-    email = params['email']
+    resque_params = {
+      subject: params['subject'],
+      description: params['description'],
+      topic: params['topic'],
+      name: params['name'],
+      order_number: params['order_number'],
+      ticket_body: "Name: #{name} \n Order Number: #{order_number} \n Description: #{description}",
+      email: params['email'],
+      email_to: "",
+    }
 
     #Choose recipient based on topic
     case topic
@@ -174,27 +181,18 @@ class ZendeskTicket < Sinatra::Base
       email_to = "help@ellie.com"
     end
 
-    #Send email:
-    sg_ticket_body = "Name: #{name} \n Email: #{email} \n Order Number: #{order_number} \n Description: #{description}"
-    sg_from = SendGrid::Email.new(email: email)
-    sg_to = SendGrid::Email.new(email: email_to)
-    sg_subject = "Ellie Contact Form Submission: #{subject}"
-    sg_content = SendGrid::Content.new(type: 'text/plain', value: sg_ticket_body)
-    sg_mail = SendGrid::Mail.new(sg_from, sg_subject, sg_to, sg_content)
+    resque_params['email_to'] = email_to
+    Resque.enqueue(EmailWorker, resque_params)
 
-    sg = SendGrid::API.new(api_key: ENV['SENDGRID_API_KEY'])
-    response = sg.client.mail._('send').post(request_body: sg_mail.to_json)
-    puts response.status_code
-
-    if response.status_code.to_i == 202 || response.status_code.to_i == 200
-      puts "success! Sent thru sendgrid"
-      puts response.status_code
-      return [200, @default_headers, {message: "Success"}.to_json]
-    else
-      puts "error with sendgrid!"
-      puts response.status_code
-      return [400, @default_headers, {message: "Problem with the request"}.to_json]
-    end
+    # if response.status_code.to_i == 202 || response.status_code.to_i == 200
+    #   puts "success! Sent thru sendgrid"
+    #   puts response.status_code
+    #   return [200, @default_headers, {message: "Success"}.to_json]
+    # else
+    #   puts "error with sendgrid!"
+    #   puts response.status_code
+    #   return [400, @default_headers, {message: "Problem with the request"}.to_json]
+    # end
   end
 
   helpers do
@@ -245,6 +243,4 @@ class ZendeskTicket < Sinatra::Base
     end
 end
 
-
-
-run ZendeskTicket.run!
+# run ZendeskTicket.run!

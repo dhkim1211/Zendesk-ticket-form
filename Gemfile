@@ -10,3 +10,9 @@ gem 'dotenv'
 gem 'shopify_api'
 gem 'sinatra-cross_origin'
 gem 'sendgrid-ruby'
+
+gem "resque"
+gem "resque-web"
+gem "redis"
+gem "rake"
+gem "activesupport"
