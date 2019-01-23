@@ -1,5 +1,5 @@
 require 'sinatra'
-require 'sinatra/reloader'
+require 'sinatra/reloader' if development?
 require 'httparty'
 require 'bundler'
 require 'base64'
@@ -8,21 +8,23 @@ require 'shopify_api'
 require 'sinatra/cross_origin'
 require 'sendgrid-ruby'
 require 'resque'
+require 'redis'
 require_relative 'resque_helper'
 require_relative 'email_worker'
-
-include SendGrid
 Dotenv.load
 
 class ZendeskTicket < Sinatra::Base
+  include SendGrid
   attr_reader :tokens
-  API_KEY = ENV['API_KEY']
-  API_SECRET = ENV['API_SECRET']
-  APP_URL = "5901b96c.ngrok.io"
+  API_KEY ||= ENV['API_KEY']
+  API_SECRET ||= ENV['API_SECRET']
+  APP_URL ||= "https://5cc70f88.ngrok.io"
 
-  set :bind, '0.0.0.0'
+  # set :bind, '0.0.0.0'
   configure do
     enable :cross_origin
+    set :server, :puma
+    set :root, File.dirname(__FILE__)
   end
   before do
     response.headers['Access-Control-Allow-Origin'] = '*'
@@ -148,7 +150,7 @@ class ZendeskTicket < Sinatra::Base
   end
 
   post '/forward_email' do
-    puts params.inspect
+    puts "received: #{params.inspect}"
     #Get form data
     resque_params = {
       subject: params['subject'],
@@ -156,33 +158,34 @@ class ZendeskTicket < Sinatra::Base
       topic: params['topic'],
       name: params['name'],
       order_number: params['order_number'],
-      ticket_body: "Name: #{name} \n Order Number: #{order_number} \n Description: #{description}",
+      ticket_body: "Name: #{params['name']} \n Order Number: #{params['order_number']}"\
+      " \n Description: #{params['description']}",
       email: params['email'],
       email_to: "",
     }
 
     #Choose recipient based on topic
-    case topic
+    case params['topic']
     when "order_status"
-      email_to = "orderstatus@ellie.com"
+      @email_to = "orderstatus@ellie.com"
     when "order_skip"
-      email_to = "help@ellie.com"
+      @email_to = "help@ellie.com"
     when "order_switch"
-      email_to = "help@ellie.com"
+      @email_to = "help@ellie.com"
     when "subscription_cancel"
-      email_to = "help@ellie.com"
+      @email_to = "help@ellie.com"
     when "returns_exchange"
-      email_to = "returns@ellie.com"
+      @email_to = "returns@ellie.com"
     when "marketing_pr"
-      email_to = "marketing@ellie.com"
+      @email_to = "marketing@ellie.com"
     when "influencer"
-      email_to = "influencers@ellie.com"
+      @email_to = "influencers@ellie.com"
     when "general"
-      email_to = "help@ellie.com"
+      @email_to = "help@ellie.com"
     end
 
-    resque_params['email_to'] = email_to
-    Resque.enqueue(EmailWorker, resque_params)
+    resque_params['email_to'] = @email_to
+    Resque.enqueue_to(:send_grid, EmailWorker, resque_params)
 
     # if response.status_code.to_i == 202 || response.status_code.to_i == 200
     #   puts "success! Sent thru sendgrid"

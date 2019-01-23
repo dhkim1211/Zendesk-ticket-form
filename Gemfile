@@ -16,3 +16,4 @@ gem "resque-web"
 gem "redis"
 gem "rake"
 gem "activesupport"
+gem 'puma'

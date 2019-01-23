@@ -5,6 +5,10 @@ require 'sendgrid-ruby'
 
 module ResqueHelper
   def send(params)
+    Resque.logger = Logger.new(
+      "#{File.expand_path File.dirname(__FILE__)}/logs/email_jobs.log", 5, 1000000
+    )
+    Resque.logger.datetime_format = '%Y-%m-%d %H:%M:%S '
     sg_ticket_body = params['ticket_body']
     sg_from = SendGrid::Email.new(email: params['email'])
     sg_to = SendGrid::Email.new(email: params['email_to'])
@@ -14,6 +18,6 @@ module ResqueHelper
 
     sg = SendGrid::API.new(api_key: ENV['SENDGRID_API_KEY'])
     response = sg.client.mail._('send').post(request_body: sg_mail.to_json)
-    Resque.logger.info response.status_code
+    Resque.logger.info "Sendgrid status code: #{response.status_code}"
   end
 end
